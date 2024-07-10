@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Data</title>
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #2C3E50; /* Background color */
+            color: #ECF0F1; /* Text color */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h2 {
+            text-align: center;
+            color: #ECF0F1;
+            margin-bottom: 20px;
+            font-size: 2em;
+            letter-spacing: 1px;
+        }
+
+        form {
+            width: 100%;
+            max-width: 1300px;
+            padding: 30px;
+            background-color: #34495E;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.5s ease-in-out;
+            margin: auto;
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        label {
+            font-weight: bold;
+            color: #ECF0F1; /* Text color */
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"], input[type="date"], input[type="datetime-local"], select {
+            width: 100%; /* Full width */
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #2980B9; /* Border color */
+            border-radius: 5px;
+            background-color: #ECF0F1; /* Background color */
+            color: #2C3E50; /* Text color */
+            font-size: 1em;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus, input[type="date"]:focus, input[type="datetime-local"]:focus, select:focus {
+            border-color: #1ABC9C; /* Border color on focus */
+            outline: none;
+        }
+
+        input[type="submit"] {
+            background-color: #2980B9; /* Button color */
+            color: #ECF0F1; /* Text color */
+            border: none;
+            border-radius: 5px;
+            padding: 15px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+            width: 100%; /* Full width */
+            box-sizing: border-box;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #1ABC9C; /* Button color on hover */
+            transform: translateY(-2px);
+        }
+
+        .form-group {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .form-group > div {
+            flex: 1;
+            min-width: 200px;
+            max-width: 250px;
+        }
+    </style>
+    <script>
+        function updateInputType() {
+            const columnSelect = document.getElementById('condition_column');
+            const selectedOption = columnSelect.options[columnSelect.selectedIndex];
+            const columnType = selectedOption.getAttribute('data-type');
+            const conditionValueInput = document.getElementById('condition_value');
+
+            if (columnType === 'DATE') {
+                conditionValueInput.type = 'date';
+            } else if (columnType === 'TIMESTAMP(0)') {
+                conditionValueInput.type = 'datetime-local';
+                conditionValueInput.step = '1';
+            } else {
+                conditionValueInput.type = 'text';
+            }
+        }
+
+        function submitSearchForm(event) {
+            event.preventDefault();
+            searchData();
+        }
+    </script>
+</head>
+<body>
+    <h2>Search Data in {{ table }}</h2>
+    <form method="get" action="/search" onsubmit="submitSearchForm(event)">
+        <input type="hidden" name="table" value="{{ table }}">
+        <div class="form-group">
+            <div>
+                <label for="condition_column">Condition Column Name:</label>
+                <select id="condition_column" name="condition_column" onchange="updateInputType()">
+                    {% for column in columns %}
+                        <option value="{{ column.name }}" data-type="{{ column.type }}">{{ column.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="condition_value">Condition Value:</label>
+                <input type="text" id="condition_value" name="condition_value" required>
+            </div>
+            <div>
+                <label for="condition">Condition:</label>
+                <select id="condition" name="condition">
+                    <option value="=">Equal to (=)</option>
+                    <option value="!=">Not equal to (!=)</option>
+                    <option value=">">Greater than (>)</option>
+                    <option value="<">Less than (<)</option>
+                    <option value=">=">Greater than or equal to (>=)</option>
+                    <option value="<=">Less than or equal to (<=)</option>
+                    <option value="LIKE">Like</option>
+                </select>
+            </div>
+        </div>
+        <input type="submit" value="Search">
+    </form>
+</body>
+</html>

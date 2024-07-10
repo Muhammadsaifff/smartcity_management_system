@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Data</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #2C3E50;
+            color: #ECF0F1;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h2 {
+            text-align: center;
+            color: #ECF0F1;
+            margin-bottom: 20px;
+            font-size: 2em;
+            letter-spacing: 1px;
+        }
+
+        form {
+            width: 100%;
+            max-width: 1300px;
+            padding: 30px;
+            background-color: #34495E;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.5s ease-in-out;
+            margin: auto;
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        label {
+            font-weight: bold;
+            color: #ECF0F1;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #2980B9;
+            border-radius: 5px;
+            background-color: #ECF0F1;
+            color: #2C3E50;
+            font-size: 1em;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: #1ABC9C;
+            outline: none;
+        }
+
+        input[type="submit"] {
+            background-color: #E74C3C;
+            color: #ECF0F1;
+            border: none;
+            border-radius: 5px;
+            padding: 15px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #C0392B;
+            transform: translateY(-2px);
+        }
+
+        .form-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .form-group > div {
+            flex: 1;
+            min-width: 200px;
+        }
+
+    </style>
+</head>
+<body>
+    <form method="post" action="/delete" onsubmit="return confirm('Are you sure you want to delete?');">
+        <h2>Delete Data from {{ table }}</h2>
+        <input type="hidden" name="table" value="{{ table }}">
+        <div class="form-group">
+            <div>
+                <label for="condition_column">Condition Column Name:</label>
+                <select id="condition_column" name="condition_column">
+                    {% for column in columns %}
+                        <option value="{{ column.name }}">{{ column.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="condition_operator">Condition Operator:</label>
+                <select id="condition_operator" name="condition_operator">
+                    <option value="=">Equal to (=)</option>
+                    <option value="!=">Not equal to (!=)</option>
+                    <option value=">">Greater than (>)</option>
+                    <option value="<">Less than (<)</option>
+                    <option value=">=">Greater than or equal to (>=)</option>
+                    <option value="<=">Less than or equal to (<=)</option>
+                    <option value="LIKE">Like</option>
+                </select>
+            </div>
+            <div>
+                <label for="condition_value">Condition Value:</label>
+                <input type="text" id="condition_value" name="condition_value" required>
+            </div>
+        </div>
+        <input type="submit" value="Delete">
+    </form>
+</body>
+</html>

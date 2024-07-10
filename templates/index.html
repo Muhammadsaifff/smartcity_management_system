@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartCity Management System</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #2C3E50;
+            color: #ECF0F1;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+
+        .container {
+            width: 90%;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #34495E;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: fadeInUp 0.5s forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        h1 {
+            text-align: center;
+            color: #ECF0F1;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        label {
+            font-weight: bold;
+            color: #ECF0F1;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        #table-select {
+            width: 100%;
+            padding: 15px;
+            margin: 15px 0;
+            border: 1px solid #2980B9;
+            border-radius: 5px;
+            background-color: #ECF0F1;
+            color: #2C3E50;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        #table-select:hover {
+            border-color: #1ABC9C;
+        }
+
+        .buttons {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .buttons button {
+            padding: 12px 30px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #2980B9;
+            color: #ECF0F1;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .buttons button:hover {
+            background-color: #1ABC9C;
+            transform: translateY(-2px);
+        }
+
+        #form-container {
+            margin-bottom: 20px;
+            display: none;
+            animation: fadeIn 0.3s forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .scroll-table {
+            overflow-y: auto;
+            border-radius: 20px;
+            margin-top: 20px;
+            max-height: 600px; /* Set a max height for the table container */
+            background-color: #2C3E50;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: hidden;
+            border-radius: 20px;
+        }
+
+        thead {
+            background-color: #2980B9;
+            color: #ECF0F1;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #34495E;
+        }
+
+        tbody tr:hover {
+            background-color: #1ABC9C;
+            color: #2C3E50;
+            transform: scale(1.02);
+            transition: all 0.3s ease;
+        }
+
+        .row-number {
+            font-weight: bold;
+            color: #BDC3C7;
+            width: 50px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SmartCity Management System</h1>
+        <label for="table-select">Select Table:</label>
+        <select id="table-select">
+            {% for table in tables %}
+                <option value="{{ table }}">{{ table }}</option>
+            {% endfor %}
+        </select>
+        <div class="buttons">
+            <button onclick="toggleForm('insert')">Insert</button>
+            <button onclick="toggleForm('update')">Update</button>
+            <button onclick="toggleForm('delete')">Delete</button>
+            <button onclick="toggleForm('search')">Search</button>
+        </div>
+        <div id="form-container">
+        </div>
+        <div class="scroll-table">
+            <table id="data-table">
+                <thead>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        function toggleForm(action) {
+            const formContainer = document.getElementById('form-container');
+            const isVisible = formContainer.style.display === 'block';
+            formContainer.innerHTML = ''; // Clear the form container
+
+            if (!isVisible) {
+                // Fetch the form from the server if not already visible
+                const table = document.getElementById('table-select').value;
+                fetch(`/${action}_form?table=${table}`)
+                    .then(response => response.text())
+                    .then(html => {
+                        formContainer.innerHTML = html;
+                        formContainer.style.display = 'block';
+                        if (action === 'search') {
+                            document.querySelector('form').addEventListener('submit', function(event) {
+                                event.preventDefault();
+                                searchData();
+                            });
+                        }
+                    });
+            } else {
+                formContainer.style.display = 'none';
+            }
+        }
+
+        function loadData() {
+            const table = document.getElementById('table-select').value;
+            fetch(`/load_data?table=${table}`)
+                .then(response => response.json())
+                .then(data => {
+                    const thead = document.getElementById('data-table').querySelector('thead');
+                    const tbody = document.getElementById('data-table').querySelector('tbody');
+                    thead.innerHTML = '';
+                    tbody.innerHTML = '';
+
+                    if (data.length > 0) {
+                        const headers = Object.keys(data[0]);
+                        const headerRow = document.createElement('tr');
+                        headerRow.appendChild(document.createElement('th')); // Empty cell for row numbers
+                        headers.forEach(header => {
+                            const th = document.createElement('th');
+                            th.textContent = header;
+                            headerRow.appendChild(th);
+                        });
+                        thead.appendChild(headerRow);
+
+                        data.forEach((row, index) => {
+                            const tr = document.createElement('tr');
+                            const rowNumberCell = document.createElement('td');
+                            rowNumberCell.textContent = index + 1;
+                            rowNumberCell.classList.add('row-number');
+                            tr.appendChild(rowNumberCell);
+                            headers.forEach(header => {
+                                const td = document.createElement('td');
+                                td.textContent = row[header];
+                                tr.appendChild(td);
+                            });
+                            tbody.appendChild(tr);
+                        });
+                    }
+                });
+        }
+
+        function searchData() {
+            const form = document.querySelector('form[action="/search"]');
+            const formData = new FormData(form);
+            const params = new URLSearchParams(formData).toString();
+            const table = document.getElementById('table-select').value;
+            fetch(`/search?${params}&table=${table}`)
+                .then(response => response.json())
+                .then(data => {
+                    const thead = document.getElementById('data-table').querySelector('thead');
+                    const tbody = document.getElementById('data-table').querySelector('tbody');
+                    thead.innerHTML = '';
+                    tbody.innerHTML = '';
+
+                    if (data.length > 0) {
+                        const headers = Object.keys(data[0]);
+                        const headerRow = document.createElement('tr');
+                        headerRow.appendChild(document.createElement('th')); // Empty cell for row numbers
+                        headers.forEach(header => {
+                            const th = document.createElement('th');
+                            th.textContent = header;
+                            headerRow.appendChild(th);
+                        });
+                        thead.appendChild(headerRow);
+
+                        data.forEach((row, index) => {
+                            const tr = document.createElement('tr');
+                            const rowNumberCell = document.createElement('td');
+                            rowNumberCell.textContent = index + 1;
+                            rowNumberCell.classList.add('row-number');
+                            tr.appendChild(rowNumberCell);
+                            headers.forEach(header => {
+                                const td = document.createElement('td');
+                                td.textContent = row[header];
+                                tr.appendChild(td);
+                            });
+                            tbody.appendChild(tr);
+                        });
+                    }
+                });
+        }
+
+        document.getElementById('table-select').addEventListener('change', loadData);
+
+        // Initial load
+        window.onload = loadData;
+
+    </script>
+</body>
+</html>
